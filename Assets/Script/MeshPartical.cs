@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using CodeMonkey.Utils;
 
 public class MeshPartical : MonoBehaviour
 {
@@ -34,7 +35,17 @@ public class MeshPartical : MonoBehaviour
 
     private void Playershoot_OnShoot(object sender, PlayerShoot.OnShootEventArg e)
     {
-        AddQuad(e.gunEndPoint);
+        int spawnquadindex = AddQuad(e.gunEndPoint);
+
+        Vector3 quadPostion = e.gunEndPoint;
+        float rotation = 0f;
+
+        FunctionUpdater.Create(() =>
+        {
+            quadPostion += new Vector3(1f, 1f) * Time.deltaTime;
+            rotation += 360f * Time.deltaTime;
+            UpdateQuad(spawnquadindex, quadPostion, 0, new Vector3(0.2f, 0.2f));
+        });
     }
 
     // Update is called once per frame
@@ -43,19 +54,29 @@ public class MeshPartical : MonoBehaviour
         
     }
 
-    private void AddQuad(Vector3 postion)
+    private int AddQuad(Vector3 postion)
     {
-        if (quadIndex > maxQuadIndex) return;
+        if (quadIndex > maxQuadIndex) return 0;
+
+        UpdateQuad(quadIndex, postion, 0f, new Vector3(0.2f, 0.2f));
+
+        int spawnQuad = quadIndex;
+        quadIndex++;
+
+        return spawnQuad;
+        
+
+    }
+    public void UpdateQuad(int quadIndex,Vector3 postion,float rotation,Vector3 quadSize)
+    {
         int vIndex = quadIndex * 4;
-        int vIndex0 = vIndex ;
+        int vIndex0 = vIndex;
         int vIndex1 = vIndex + 1;
         int vIndex2 = vIndex + 2;
         int vIndex3 = vIndex + 3;
 
 
-        Vector3 quadSize = new Vector3(0.2f, 0.2f);
-
-        float rotation = 0f;
+        
 
         vertices[vIndex0] = postion + Quaternion.Euler(0, 0, rotation - 180) * quadSize;
         vertices[vIndex1] = postion + Quaternion.Euler(0, 0, rotation - 270) * quadSize;
@@ -75,14 +96,9 @@ public class MeshPartical : MonoBehaviour
         triangles[tIndex + 3] = vIndex0;
         triangles[tIndex + 4] = vIndex2;
         triangles[tIndex + 5] = vIndex3;
-        quadIndex++;
+
         mesh.vertices = vertices;
         mesh.uv = uv;
         mesh.triangles = triangles;
-
-    }
-    public void UpdateQuad(int quadIndex,Vector3 postion,float rotation,Vector3 quadSize)
-    {
-        
     }
 }
