@@ -35,16 +35,18 @@ public class MeshPartical : MonoBehaviour
 
     private void Playershoot_OnShoot(object sender, PlayerShoot.OnShootEventArg e)
     {
-        int spawnquadindex = AddQuad(e.gunEndPoint);
 
         Vector3 quadPostion = e.gunEndPoint;
         float rotation = 0f;
+        Vector3 size = new Vector3(0.1f, 0.2f);
+
+        int spawnquadindex = AddQuad(e.gunEndPoint,rotation, size,true);
 
         FunctionUpdater.Create(() =>
         {
             quadPostion += new Vector3(1f, 1f) * Time.deltaTime;
             rotation += 360f * Time.deltaTime;
-            UpdateQuad(spawnquadindex, quadPostion, 0, new Vector3(0.2f, 0.2f));
+            UpdateQuad(spawnquadindex, quadPostion, rotation, new Vector3(0.1f, 0.2f),true);
         });
     }
 
@@ -54,11 +56,11 @@ public class MeshPartical : MonoBehaviour
         
     }
 
-    private int AddQuad(Vector3 postion)
+    private int AddQuad(Vector3 postion,float rotation,Vector3 size,bool skewed)
     {
         if (quadIndex > maxQuadIndex) return 0;
 
-        UpdateQuad(quadIndex, postion, 0f, new Vector3(0.2f, 0.2f));
+        UpdateQuad(quadIndex, postion, rotation, size,skewed);
 
         int spawnQuad = quadIndex;
         quadIndex++;
@@ -67,7 +69,7 @@ public class MeshPartical : MonoBehaviour
         
 
     }
-    public void UpdateQuad(int quadIndex,Vector3 postion,float rotation,Vector3 quadSize)
+    public void UpdateQuad(int quadIndex,Vector3 postion,float rotation,Vector3 quadSize,bool skewed)
     {
         int vIndex = quadIndex * 4;
         int vIndex0 = vIndex;
@@ -76,12 +78,22 @@ public class MeshPartical : MonoBehaviour
         int vIndex3 = vIndex + 3;
 
 
-        
 
-        vertices[vIndex0] = postion + Quaternion.Euler(0, 0, rotation - 180) * quadSize;
-        vertices[vIndex1] = postion + Quaternion.Euler(0, 0, rotation - 270) * quadSize;
-        vertices[vIndex2] = postion + Quaternion.Euler(0, 0, rotation - 0) * quadSize;
-        vertices[vIndex3] = postion + Quaternion.Euler(0, 0, rotation - 90) * quadSize;
+
+        if (skewed)
+        {
+            vertices[vIndex0] = postion + Quaternion.Euler(0, 0, rotation) * new Vector3(-quadSize.x,-quadSize.y);
+            vertices[vIndex1] = postion + Quaternion.Euler(0, 0, rotation) * new Vector3(-quadSize.x, +quadSize.y);
+            vertices[vIndex2] = postion + Quaternion.Euler(0, 0, rotation) * new Vector3(+quadSize.x, +quadSize.y);
+            vertices[vIndex3] = postion + Quaternion.Euler(0, 0, rotation) * new Vector3(+quadSize.x, -quadSize.y);
+        }
+        else
+        {
+            vertices[vIndex0] = postion + Quaternion.Euler(0, 0, rotation - 180) * quadSize;
+            vertices[vIndex1] = postion + Quaternion.Euler(0, 0, rotation - 270) * quadSize;
+            vertices[vIndex2] = postion + Quaternion.Euler(0, 0, rotation - 0) * quadSize;
+            vertices[vIndex3] = postion + Quaternion.Euler(0, 0, rotation - 90) * quadSize;
+        }
 
         uv[vIndex0] = new Vector2(0, 0);
         uv[vIndex1] = new Vector2(0, 1);
